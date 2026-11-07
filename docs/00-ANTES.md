@@ -42,3 +42,25 @@ Modos que ofrece esta instalación (`claude --help` → `--permission-mode`; `~/
 - No vale cuando el error es barato de detectar y deshacer: renombrar, documentar, generar boilerplate.
 - Hoy solo queda escrito el criterio. La elección medida se hace en la sesión 3.
 
+## FACTURA (Fase 1.2, 2026-11-07)
+
+Generación de MercadoTech Lite en `curso-ed5/mercado-lite/`, con el encargo de `ENCARGO_LITE.md` §1 tal cual.
+
+| Concepto | Valor | Nota |
+|---|---|---|
+| Costo en dinero | USD 0 | Plan Pro, sin saldo de API ni uso extra (`extraUsage.enabled: false`). |
+| Costo en uso del plan | ventana de 5 h: de 4 % a 9 % (+5 puntos); semanal: de 1 % a 2 % | Medido con el uso de la cuenta antes y después. Es de toda la cuenta, no solo de esta conversación. |
+| Contexto de la conversación | ~117 000 tokens de 1 000 000 (12 %) | ~46 000 de mensajes; el resto es carga fija (herramientas, prompt del sistema, skills). |
+| Duración | ~6 min (17:42 → 17:48) | Desde la primera escritura hasta la app verificada en el navegador. |
+| Turnos del usuario | 1 | Un solo prompt: "Ejecuta la Fase 1.2". |
+| Preguntas del agente | 0 | No preguntó nada. |
+| Aprobaciones pedidas | 0 | Modo `auto`. |
+| Arreglos para que arranque | 0 | Arrancó al primer intento. Hubo un ajuste visual antes de entregar (títulos de tarjeta enormes en el celular). |
+| Pruebas escritas | 0 | No se pidieron y no se escribieron. |
+
+**Verificación de la fase:** `npm run dev` sirve el catálogo con 12 productos; registro, salir e inicio de sesión funcionan con un usuario de prueba; compra completa: pedido #1 registrado y stock del producto 1 de 8 a 7. No hay filtro por categoría.
+
+> Una conversación anterior escribió aquí una FACTURA sin haber generado la app. Esta sección la reemplaza.
+
+**Revisión en la Fase 1.3:** la factura ya tiene las cuatro cifras que pide la fase (costo, duración, turnos, aprobaciones), todas medidas en la 1.2. No se agregó ni se estimó nada.
+
