@@ -62,6 +62,8 @@ img { max-width: 100%; display: block; }
 .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
 .chip { display: inline-block; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: .9rem; font-weight: 500; text-decoration: none; transition: background .15s, border-color .15s; }
 .chip:hover { border-color: var(--primary); color: var(--primary); }
+.chip-disabled, .chip-disabled:hover { opacity: .45; cursor: default; border-color: var(--border); color: var(--text); }
+.pagination { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 28px 0 0; }
 .chip-active, .chip-active:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
 .tag { display: inline-block; font-size: 0.75rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
 .stock-low { color: var(--danger); font-size: .85rem; }
