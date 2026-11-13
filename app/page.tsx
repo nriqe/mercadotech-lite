@@ -3,20 +3,6 @@ import { getDb, formatPEN, type Product } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-const PAGE_SIZE = 6;
-
-function first(v: string | string[] | undefined) {
-  return Array.isArray(v) ? v[0] : v;
-}
-
-function catalogHref(categoria: string | null, pagina: number) {
-  const params = new URLSearchParams();
-  if (categoria) params.set("categoria", categoria);
-  if (pagina > 1) params.set("pagina", String(pagina));
-  const qs = params.toString();
-  return qs ? `/?${qs}` : "/";
-}
-
 export default async function CatalogPage({
   searchParams,
 }: {
@@ -27,20 +13,15 @@ export default async function CatalogPage({
     db.prepare("SELECT DISTINCT category FROM products ORDER BY category").all() as { category: string }[]
   ).map((r) => r.category);
 
-  const params = await searchParams;
-  const requested = first(params.categoria);
+  const raw = (await searchParams).categoria;
+  const requested = Array.isArray(raw) ? raw[0] : raw;
   const selected = requested && categories.includes(requested) ? requested : null;
 
-  const where = selected ? "WHERE category = ?" : "";
-  const filter = selected ? [selected] : [];
-  const total = (db.prepare(`SELECT COUNT(*) AS n FROM products ${where}`).get(...filter) as { n: number }).n;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const requestedPage = Number.parseInt(first(params.pagina) ?? "1", 10);
-  const page = Number.isFinite(requestedPage) ? Math.min(Math.max(requestedPage, 1), totalPages) : 1;
-
-  const products = db
-    .prepare(`SELECT * FROM products ${where} ORDER BY id DESC LIMIT ? OFFSET ?`)
-    .all(...filter, PAGE_SIZE, (page - 1) * PAGE_SIZE) as Product[];
+  const products = (
+    selected
+      ? db.prepare("SELECT * FROM products WHERE category = ? ORDER BY id DESC").all(selected)
+      : db.prepare("SELECT * FROM products ORDER BY id DESC").all()
+  ) as Product[];
 
   return (
     <>
@@ -55,7 +36,7 @@ export default async function CatalogPage({
         {categories.map((c) => (
           <Link
             key={c}
-            href={catalogHref(c, 1)}
+            href={`/?categoria=${encodeURIComponent(c)}`}
             className={`chip${selected === c ? " chip-active" : ""}`}
             aria-current={selected === c ? "page" : undefined}
           >
@@ -82,34 +63,6 @@ export default async function CatalogPage({
           </Link>
         ))}
       </div>
-      {totalPages > 1 && (
-        <nav className="pagination" aria-label="Paginación del catálogo">
-          {page > 1 ? (
-            <Link href={catalogHref(selected, page - 1)} className="chip" rel="prev">
-              ← Anterior
-            </Link>
-          ) : (
-            <span className="chip chip-disabled" aria-disabled="true">← Anterior</span>
-          )}
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-            <Link
-              key={n}
-              href={catalogHref(selected, n)}
-              className={`chip${n === page ? " chip-active" : ""}`}
-              aria-current={n === page ? "page" : undefined}
-            >
-              {n}
-            </Link>
-          ))}
-          {page < totalPages ? (
-            <Link href={catalogHref(selected, page + 1)} className="chip" rel="next">
-              Siguiente →
-            </Link>
-          ) : (
-            <span className="chip chip-disabled" aria-disabled="true">Siguiente →</span>
-          )}
-        </nav>
-      )}
     </>
   );
 }
