@@ -4,7 +4,7 @@ La misma tarea, tres veces: hoy sin reglas, en la sesión 2 con `CLAUDE.md` y en
 
 | Corrida | Resultado | Turnos | Estado del filtro | Costo | Duración |
 |---|---|---|---|---|---|
-| S1 · sin reglas | ✅ sin intervención | 0 | La URL (`/?categoria=Audio`), leída en `app/page.tsx` | USD 0 (plan Pro); 61 490 tokens del agente; % del plan: sin medir | 1 min 19 s (18:20:31 → 18:21:50) |
+| S1 · sin reglas | ✅ sin intervención | 0 | La URL (`/?categoria=Audio`), leída en `app/page.tsx` | USD 0 (plan Pro); 61 490 tokens del agente; % del plan: sin medir. **Recuperado el 2026-11-12** del registro del subagente que corrió la tarea (`7d7ab2ff…/subagents/agent-a729d79d….jsonl`), cada respuesta contada una vez: entrada 16 · caché escrita 60 709 · caché leída 378 527 · salida 3 156 → ~USD 0,44 (tarifas de `tokens.py`, Opus 5.5) | 1 min 19 s (18:20:31 → 18:21:50) |
 | S2 · con `CLAUDE.md` | | | | | |
 | S3 · configuración elegida | | | | | |
 
