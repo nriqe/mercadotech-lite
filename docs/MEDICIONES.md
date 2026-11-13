@@ -2,13 +2,21 @@
 
 La misma tarea, tres veces: hoy sin reglas, en la sesión 2 con `CLAUDE.md` y en la sesión 3 con la configuración elegida. El enunciado es el de `curso-ed5/TAREA_PATRON.md` §1, sin cambiar una palabra.
 
-| Corrida | Resultado | Turnos | Estado del filtro | Costo | Duración |
-|---|---|---|---|---|---|
-| S1 · sin reglas | ✅ sin intervención | 0 | La URL (`/?categoria=Audio`), leída en `app/page.tsx` | USD 0 (plan Pro); 61 490 tokens del agente; % del plan: sin medir. **Recuperado el 2026-11-12** del registro del subagente que corrió la tarea (`7d7ab2ff…/subagents/agent-a729d79d….jsonl`), cada respuesta contada una vez: entrada 16 · caché escrita 60 709 · caché leída 378 527 · salida 3 156 → ~USD 0,44 (tarifas de `tokens.py`, Opus 5.5) | 1 min 19 s (18:20:31 → 18:21:50) |
-| S2 · con `CLAUDE.md` | | | | | |
-| S3 · configuración elegida | | | | | |
+| Corrida | Resultado | Turnos | Estado del filtro | Costo | Duración | Decisiones no pedidas |
+|---|---|---|---|---|---|---|
+| S1 · sin reglas | a la primera | 0 | En la URL (`?pagina=N`, junto a `?categoria=` si hay una), leída en `app/page.tsx` | entrada 1,045 · caché esc 2.38M · caché lec 41.5M · salida 333K · US$ 26.87 (fila de `tokens.py`) | 1 minuto | 7 — contadas sobre el diff del commit `e4bbfa2`: (1) una página fuera de rango se lleva a la más cercana; (2) la página 1 no se escribe en la URL; (3) cambiar de categoría vuelve a la página 1; (4) la paginación se oculta si hay una sola página; (5) botones Anterior/Siguiente, con estilo desactivado; (6) consultas reescritas con `COUNT` y `LIMIT`/`OFFSET`; (7) atributos `aria-*` y `rel="prev"`/`"next"` |
+| S2 · con `CLAUDE.md` | | | | | | |
+| S3 · configuración elegida | | | | | | |
 
-## Detalle de la corrida S1 (2026-11-07)
+Enunciado usado (enunciado 2 de `curso-ed5/TAREA_PATRON.md`, porque la app ya filtraba por categoría):
+
+> "Muestra solo 6 productos por página, con enlaces para pasar de página, y que si recargo siga en la página en la que estaba."
+
+**Nota.** Mi línea base se midió en la sesión 2 porque la de la sesión 1 no quedó commiteada. La validación de las tres corridas se hace sobre esta tarea.
+
+## Corrida de la sesión 1 (2026-11-07), anterior a esta línea base
+
+**La fila que ocupaba en la tabla (enunciado 1, filtro por categoría).** Resultado: ✅ sin intervención. Turnos: 0. Estado: en la URL (`/?categoria=Audio`), leída en `app/page.tsx`. Costo: USD 0 (plan Pro); 61 490 tokens del agente; % del plan: sin medir. Recuperado el 2026-11-12 del registro del subagente que corrió la tarea (`7d7ab2ff…/subagents/agent-a729d79d….jsonl`), contando cada respuesta una vez: entrada 16 · caché escrita 60 709 · caché leída 378 527 · salida 3 156 → ~USD 0,44 (tarifas de `tokens.py`, Opus 5.5). Duración: 1 min 19 s (18:20:31 → 18:21:50).
 
 **Cómo se corrió.** Un agente nuevo, sin el contexto de esta sesión, recibió solo dos cosas: la ruta del proyecto (`curso-ed5/mercado-lite`) y el enunciado literal. No leyó la spec del curso. Trabajó 38 s, con 8 usos de herramientas, y no hizo ninguna pregunta.
 
