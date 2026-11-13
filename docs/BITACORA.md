@@ -34,6 +34,30 @@ Generada con el encargo de `ENCARGO_LITE.md` §1 tal cual, en un turno, en modo 
 | Filtro por categoría en la URL, no en `useState` | `app/page.tsx` | Contradice la predicción de `TAREA_PATRON.md`: el filtro sobrevive a F5. |
 | `AGENTS.md` versionado | raíz | Lo escribe `next dev`, no el agente. Se subió tal cual. |
 
+### Decisiones que tomé sin que me las pidieran
+
+*Recuperada el 2026-11-12, en la sesión 2, de la conversación original de la Fase 1.2, no en el momento.* Es la lista que el agente escribió en el chat al cerrar la generación, con las mismas palabras. No se rehízo leyendo el código. La tabla de arriba se armó después, en la 1.3 y el cierre, revisando el código.
+
+1. Las páginas leen la base de datos directamente, sin una capa de por medio.
+2. No hay archivo de constantes: los textos de moneda, los límites de stock y similares están escritos dentro del código.
+3. No hay pruebas ni script `test`.
+4. Agregué dos tablas que el encargo no menciona: `sessions` y `order_items`.
+5. Las contraseñas se guardan cifradas con `scrypt`, y la sesión vive en una cookie que el navegador no puede editar.
+6. Para cargar productos solo hay que haber iniciado sesión. No hay rol de administrador, así que cualquier usuario registrado puede crear productos.
+
+**Total: 6 decisiones.**
+
+**⚠️ Las que habría querido aprobar antes:**
+
+| # | ⚠️ Decisión | Por qué |
+|---|---|---|
+| 1 | ⚠️ Páginas que consultan la base directamente | Fija la arquitectura de todo el proyecto, y cambiarla después obliga a tocar cada página. |
+| 4 | ⚠️ Dos tablas fuera de las 4 del alcance | Cambia el modelo de datos acordado, y todo lo que venga después se apoya en él. |
+| 5 | ⚠️ `scrypt` y sesión en cookie con tabla propia | Elige el mecanismo de autenticación, que es caro de migrar cuando ya hay usuarios. |
+| 6 | ⚠️ Cualquier usuario registrado carga productos | Abre una escritura privilegiada a cualquiera que cree una cuenta: es una decisión de seguridad del dueño del negocio. |
+
+Las decisiones 2 y 3 no las habría querido aprobar: son omisiones que se corrigen sin romper nada (2) o que el encargo dejó fuera a propósito (3).
+
 ### Qué costó
 
 | Medida | Valor |
