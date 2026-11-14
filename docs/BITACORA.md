@@ -92,3 +92,95 @@ Las decisiones 2 y 3 no las habría querido aprobar: son omisiones que se corrig
 6. Los defectos siguen abiertos: 1 y 2 (S2 y S5), 3 (S6), 4 (S6 y S7), 5 (S5/S7), 6 (S7).
 
 Remoto: `git@github.com:nriqe/mercadotech-lite.git`.
+
+---
+
+## Sesión 2 — Memoria y contexto: `CLAUDE.md` como contrato (2026-11-13)
+
+### Qué reglas escribí y a qué fila del inventario apunta cada una
+
+`CLAUDE.md` en la raíz, 31 líneas. Seis reglas, cada una con su comando de verificación:
+
+| Regla del `CLAUDE.md` | Sección | Fila de `00-ANTES.md` |
+|---|---|---|
+| No hay pruebas ni script `test`; no decir que pasaron | Comandos | 3 · Cero pruebas |
+| Los `.tsx` no consultan la base (`getDb()`, `.prepare(`) | Reglas de arquitectura | 1 · Componentes que consultan la base |
+| Los valores ajustables viven en `lib/constants/` | Valores ajustables | 2 · Valores ajustables incrustados |
+| `/admin` y `createProductAction` exigen administrador | Seguridad | 4 · Seguridad abierta (la forma que apareció) |
+| El `next` del login solo acepta rutas internas | Seguridad | 5 · Redirección abierta (extra) |
+| La sesión también vence en el servidor | Seguridad | 6 · Sesiones sin vencimiento (extra) |
+
+No hay sección "estado de la interfaz": ningún defecto del inventario la pedía.
+
+### La auditoría
+
+Con el comando: `/doctor prompt-audit`.
+
+* **1 hallazgo** del audit: `CLAUDE.md` decía `app/page.tsx:26` para el stock bajo, y ahí solo hay `return (`. El valor estaba en la línea 59.
+* **1 regla falsa más**, que encontró la verificación (correr el comando de cada regla), no el audit: el grep de valores ajustables nunca podía salir limpio, porque `placehold\.co/600x450` también encontraba las URLs fijas de la semilla en `lib/db.ts`. Se cambió por `placehold\.co/600x450/[^?]*\?text=[$]\{`.
+* **Acepté 2 de 2.** El audit dejó además tres notas sin propuesta de edición (los números de línea van a seguir envejeciendo; el bloque de `AGENTS.md` lo reescribe `next dev`; `CLAUDE.md` no importa `AGENTS.md`). No se aplicó ninguna.
+
+### Fase 2.2: el caso de historial
+
+El Prompt 0 lo clasificó como **caso D**. Al revisar el historial, el agente vio que en la práctica era **caso A**: el commit mezclado es `2cd75d8` (filtro por categoría de la sesión 1), pero la línea base se rehízo en la sesión 2 con la paginación, aislada en `e4bbfa2`.
+
+Qué hubo que hacer:
+
+* Revertir `e4bbfa2` con `git revert`. `2cd75d8` no se tocó: es otra tarea y revertirlo habría cambiado `docs/MEDICIONES.md`.
+* El primer intento falló: el comando se lanzó desde la carpeta del curso, que no es un repositorio. Se repitió dentro de `curso-ed5/mercado-lite`, sin conflictos.
+* `--amend` solo para cambiarle el mensaje al commit de revert. Queda `3cc9d48`; `e4bbfa2` sigue en el historial.
+* `git diff 6bbd251 HEAD -- app/` → sin diferencias.
+* `git status` no quedó vacío: `CLAUDE.md` seguía sin seguimiento. Se commitea al cerrar esta sesión.
+
+### La fila S2 al lado de la S1
+
+| | S1 · sin reglas | S2 · con `CLAUDE.md` |
+|---|---|---|
+| Resultado | a la primera | tras corregir |
+| Turnos de corrección | 0 | 1 |
+| Estado del filtro | En la URL, leído en `app/page.tsx` | En la URL, leído en `app/page.tsx`; la consulta en `lib/catalog.ts` |
+| Costo (fila de `tokens.py`) | US$ 26.87 (caché leída 41.5M) | US$ 1.89 (caché leída 4,334,323) |
+| Duración | 1 minuto | 7 minutos (el código solo: 1 min 9 s) |
+| Decisiones no pedidas | 7 | 11, 3 con ⚠️ |
+| Commit | `e4bbfa2` | `b1a9221` |
+
+**El turno de corrección de S2.** El primer mensaje de la corrida no fue el enunciado: fue la frase de cabecera de `docs/MEDICIONES.md`. El agente preguntó qué corrida hacer y yo elegí "S2 con `CLAUDE.md`". Después corrió el enunciado 2 (paginación). Ese es el turno. La comparación de resultado y turnos mide eso, no el contrato.
+
+**La duración de S2** incluye esa pregunta y la configuración del navegador. La de S1 no la tiene desglosada: sin medir.
+
+**El costo** es la fila de `tokens.py` de cada conversación entera. Cuánto de cada una fue la tarea y cuánto el resto: sin medir.
+
+### Qué cambió y qué no
+
+* **Cambió:** dónde vive el código. En S2 las consultas del catálogo salieron de `app/page.tsx` a `lib/catalog.ts`, y el 6 por página es `PRODUCTS_PER_PAGE` en `lib/constants/catalog.ts`. Las dos cosas las pide el `CLAUDE.md` (filas 1 y 2). En S1, `app/page.tsx` tenía más consultas que antes.
+* **Empató:** dónde quedó el estado del filtro. En las dos, en la URL (`?pagina=N`). El `CLAUDE.md` no dice nada sobre el estado de la interfaz: no tiene esa sección, porque el agente ya lo ponía en la URL sin reglas. Esa columna no mide el contrato.
+* **No comparable:** resultado y turnos (S2 tuvo un turno por un primer mensaje equivocado, no por el código), costo y duración (cada uno es de la conversación entera).
+
+### Verificación del `CLAUDE.md` al cerrar
+
+Corrí el comando de cada regla después de la corrida S2. Ninguna regla se cumple todavía, y eso el archivo lo dice. Pero **tres afirmaciones de "hoy" quedaron falsas por la corrida S2**:
+
+1. "Hoy no se cumple en 5 archivos": son 4. `app/page.tsx` ya no consulta la base.
+2. "`lib/constants/`, que todavía no existe": existe, con `catalog.ts`.
+3. "stock bajo `5` (app/page.tsx:59 …)": ahora está en `app/page.tsx:66`.
+
+Las tres se corrigieron al cerrar, con mi aprobación. Son correcciones de hechos, no reglas nuevas: el comando de cada regla no cambió.
+
+### Qué salió mal
+
+* El primer mensaje de la corrida S2 no fue el enunciado. Costó un turno y ensucia la columna "Turnos".
+* El agente de S2 llenó primero la fila como "a la primera", 0 turnos y 9 decisiones. La corregí yo: tras corregir, 1 turno, 11 decisiones.
+* El revert de la 2.2 se lanzó primero fuera del repositorio.
+* El `CLAUDE.md` pasó toda la sesión sin commitear: la guía pedía commitearlo en la 2.1, antes de probar `/init`.
+* La corrida S2 creó `.claude/launch.json` en la carpeta del curso, fuera del repositorio. Sigue ahí.
+* % del plan: sin medir, otra vez.
+
+### Pendiente para la sesión 3
+
+1. Al revertir `b1a9221`, las tres afirmaciones corregidas hoy vuelven a ser falsas (5 archivos, sin `lib/constants/`, línea 59). Correr las verificaciones después del revert.
+2. Revertir `b1a9221` antes de la corrida S3, como se revirtió `e4bbfa2`.
+3. Correr la fila S3 con el enunciado 2, pegando el enunciado como primer mensaje.
+4. Medir el % del plan en la corrida.
+5. Decidir si `CLAUDE.md` importa `AGENTS.md` (`@AGENTS.md`) y qué hacer con `.claude/launch.json`.
+6. Avisar al docente de los greps de Supabase en `ENCARGO_LITE.md` §3 (sigue pendiente de la sesión 1).
+7. Los defectos siguen abiertos: 1 y 2 en parte (lo que hizo S2 en el catálogo), 3, 4, 5 y 6 enteros. Material de las sesiones 5, 6 y 7.
