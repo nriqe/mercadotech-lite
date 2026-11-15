@@ -33,4 +33,4 @@ Las cifras de C vienen de la fila anterior de este archivo; hoy no las reverifiq
 
 ## Regla
 
-Elijo A (opus-5-5 · medium): a pesar del precio y del tiempo, lo hace a la primera.
+Para tareas con varios criterios que tengo que poder comprobar (paginación, estado en la URL, recarga), uso opus-5-5 · medium, porque pasó los 5 pasos a la primera aunque costó US$ 0.87 y tardó 2 min. Para cambios chicos que reviso yo mismo, uso opus-5-5 · low (US$ 0.30, 1 min) y miro el resultado a mano.

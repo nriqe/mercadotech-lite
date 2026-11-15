@@ -223,7 +223,9 @@ Lo que dicen los registros: C también quedó "a la primera" con 0 turnos. Lo qu
 
 ### Qué dice mi regla
 
-Última línea de `docs/COSTOS.md`: "Elijo A (opus-5-5 · medium): a pesar del precio y del tiempo, lo hace a la primera." La segunda mitad de la forma "para tareas así uso esto, y para estas otras, aquello" no está escrita.
+Última línea de `docs/COSTOS.md`: "Para tareas con varios criterios que tengo que poder comprobar (paginación, estado en la URL, recarga), uso opus-5-5 · medium, porque pasó los 5 pasos a la primera aunque costó US$ 0.87 y tardó 2 min. Para cambios chicos que reviso yo mismo, uso opus-5-5 · low (US$ 0.30, 1 min) y miro el resultado a mano."
+
+La cifra de US$ 0.87 de A incluye la enumeración, el commit y la medición; el propio agente reportó US$ 0.78 antes de seguir la conversación. B no recorrió los 5 pasos ni hizo commit, así que la regla manda a B a cambios que reviso a mano.
 
 ### Qué cambió a lo largo del curso y qué no
 
@@ -243,9 +245,8 @@ Filas S1, S2 y S3 (=A) de `docs/MEDICIONES.md`.
 
 ### Pendiente para la sesión 4
 
-1. Escribir la segunda mitad de la regla ("y para estas otras, aquello").
-2. El repositorio quedó con el código de la corrida C commiteado (`cd052aa`), y elegí A (`19689e5`, revertido en `32e374b`). Decidir si se revierte C y se vuelve a aplicar A.
-3. Si quiero un costo de A limpio, repetirla con la tarea sola y la enumeración, el commit y la medición en mensajes aparte.
-4. Decidir si `CLAUDE.md` importa `AGENTS.md` y qué hacer con `.claude/launch.json` (de la sesión 2).
-5. Avisar al docente de los greps de Supabase en `ENCARGO_LITE.md` §3 (de la sesión 1).
-6. Los defectos del inventario siguen abiertos: material de las sesiones 5, 6 y 7.
+1. El repositorio quedó con el código de la corrida C commiteado (`cd052aa`), y elegí A (`19689e5`, revertido en `32e374b`). Decidir si se revierte C y se vuelve a aplicar A.
+2. Si quiero un costo de A limpio, repetirla con la tarea sola y la enumeración, el commit y la medición en mensajes aparte.
+3. Decidir si `CLAUDE.md` importa `AGENTS.md` y qué hacer con `.claude/launch.json` (de la sesión 2).
+4. Avisar al docente de los greps de Supabase en `ENCARGO_LITE.md` §3 (de la sesión 1).
+5. Los defectos del inventario siguen abiertos: material de las sesiones 5, 6 y 7.
