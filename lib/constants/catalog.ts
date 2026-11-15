@@ -1,2 +1,2 @@
-/** Productos que muestra cada página del catálogo. */
+/** Cuántos productos muestra el catálogo en cada página. */
 export const PRODUCTS_PER_PAGE = 6;

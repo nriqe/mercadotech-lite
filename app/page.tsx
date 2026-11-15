@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatPEN } from "@/lib/db";
-import { getCatalogPage, getCategories } from "@/lib/catalog";
+import { getCatalogPage } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -12,8 +12,8 @@ function catalogHref(category: string | null, page: number) {
   const params = new URLSearchParams();
   if (category) params.set("categoria", category);
   if (page > 1) params.set("pagina", String(page));
-  const query = params.toString();
-  return query ? `/?${query}` : "/";
+  const qs = params.toString();
+  return qs ? `/?${qs}` : "/";
 }
 
 export default async function CatalogPage({
@@ -21,14 +21,11 @@ export default async function CatalogPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const query = await searchParams;
-  const categories = getCategories();
-
-  const requested = first(query.categoria);
-  const selected = requested && categories.includes(requested) ? requested : null;
-  const requestedPage = Number.parseInt(first(query.pagina) ?? "1", 10) || 1;
-
-  const { products, page, totalPages } = getCatalogPage(selected, requestedPage);
+  const sp = await searchParams;
+  const { categories, selectedCategory: selected, products, page, totalPages } = getCatalogPage(
+    first(sp.categoria) ?? null,
+    Number(first(sp.pagina) ?? "1")
+  );
 
   return (
     <>
@@ -71,7 +68,15 @@ export default async function CatalogPage({
         ))}
       </div>
       {totalPages > 1 && (
-        <nav className="filters pagination" aria-label="Páginas del catálogo">
+        <nav className="pagination" aria-label="Páginas del catálogo">
+          <Link
+            href={catalogHref(selected, page - 1)}
+            className={`chip${page === 1 ? " chip-disabled" : ""}`}
+            aria-disabled={page === 1}
+            tabIndex={page === 1 ? -1 : undefined}
+          >
+            ← Anterior
+          </Link>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
             <Link
               key={n}
@@ -82,6 +87,14 @@ export default async function CatalogPage({
               {n}
             </Link>
           ))}
+          <Link
+            href={catalogHref(selected, page + 1)}
+            className={`chip${page === totalPages ? " chip-disabled" : ""}`}
+            aria-disabled={page === totalPages}
+            tabIndex={page === totalPages ? -1 : undefined}
+          >
+            Siguiente →
+          </Link>
         </nav>
       )}
     </>
