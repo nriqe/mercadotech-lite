@@ -57,10 +57,12 @@ Generación de MercadoTech Lite en `curso-ed5/mercado-lite/`, con el encargo de 
 | Aprobaciones pedidas | 0 | Modo `auto`. |
 | Arreglos para que arranque | 0 | Arrancó al primer intento. Hubo un ajuste visual antes de entregar (títulos de tarjeta enormes en el celular). |
 | Pruebas escritas | 0 | No se pidieron y no se escribieron. |
-| Tokens (recuperado) | entrada 66 · caché escrita 67 342 · caché leída 3 126 002 · salida 28 226 | Recuperado el 2026-11-12 de la conversación guardada `52677471…jsonl`, solo turnos del 2026-11-07 (los posteriores, del 12-nov, son de la Sesión 3). Cada respuesta contada una vez (32 respuestas): `tokens.py` suma cada respuesta varias veces porque Claude Code repite el contador en cada línea; con su método saldría 132 · 165 235 · 6 266 991 · 60 759. |
-| Equivalente en dólares (recuperado) | ~USD 1,53 | Recuperado el 2026-11-12 con las tarifas públicas de Opus 5.5 que trae `tokens.py` (consultadas el 2026-11-09). No se cobró: es el valor de lo consumido. |
+| Tokens (medido de nuevo) | entrada 66 · caché escrita 67,342 · caché leída 3,126,002 · salida 28,226 | Medido el 2026-11-14 con el `tokens.py` corregido: `--bloques 52677471`, bloque 1 ("Ejecuta la Fase 1.2 de Ed5_sesion1.md.", 17:40, `opus-5-5 · medium`, 32 turnos, 7 min). Coincide con lo recuperado a mano el 2026-11-12, que ya contaba cada respuesta una vez. |
+| Equivalente en dólares (medido de nuevo) | US$ 1.53 | Mismo bloque 1 de `52677471`, tarifas de Opus 5.5 que trae `tokens.py` (consultadas el 2026-11-09). No se cobró: es el valor de lo consumido. |
 | Duración (recuperada) | 7 min 21 s (17:40:58 → 17:48:19) | Recuperado el 2026-11-12 de las marcas de tiempo de la conversación: del primer mensaje a la última respuesta de la generación. La fila "Duración" de arriba mide desde la primera escritura. |
-| Caché (recuperado) | leídos de caché: US$ 5,94; como entrada nueva habrían costado US$ 118,83; 95,0 % de la entrada entró por caché (29 706 568 ÷ 31 269 323) | Recuperado el 2026-11-12: línea final de `tokens.py`, tal cual. Abarca **todas** las conversaciones del proyecto hasta esa fecha, no solo la generación, y lleva el doble conteo de la herramienta. |
+| Caché (medido de nuevo) | leídos de caché: US$ 7.74; como entrada nueva habrían costado US$ 154.72 (38,678,850 tokens leídos) | Medido el 2026-11-14 19:54 con el `tokens.py` corregido de `doc_sesions/sesion3/`, sin argumentos: las dos últimas líneas, tal cual. Abarca **todas** las conversaciones del proyecto hasta ese momento, incluidas las de la sesión 3, no solo la generación. Valor viejo (2026-11-12, con doble conteo): US$ 5,94 contra US$ 118,83. |
+
+**Nueva medición (2026-11-14).** El consumo de la generación sale de la conversación `52677471`, bloque 1, y la caché de la corrida sin argumentos de las 19:54; las dos con el `tokens.py` corregido de `doc_sesions/sesion3/`.
 
 **Verificación de la fase:** `npm run dev` sirve el catálogo con 12 productos; registro, salir e inicio de sesión funcionan con un usuario de prueba; compra completa: pedido #1 registrado y stock del producto 1 de 8 a 7. No hay filtro por categoría.
 
