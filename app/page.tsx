@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { formatPEN } from "@/lib/db";
-import { getCategories, getCatalogPage } from "@/lib/catalog";
+import { getDb, formatPEN, type Product } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -9,24 +8,20 @@ export default async function CatalogPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const categories = getCategories();
-  const params = await searchParams;
+  const db = getDb();
+  const categories = (
+    db.prepare("SELECT DISTINCT category FROM products ORDER BY category").all() as { category: string }[]
+  ).map((r) => r.category);
 
-  const rawCat = params.categoria;
-  const requested = Array.isArray(rawCat) ? rawCat[0] : rawCat;
+  const raw = (await searchParams).categoria;
+  const requested = Array.isArray(raw) ? raw[0] : raw;
   const selected = requested && categories.includes(requested) ? requested : null;
 
-  const rawPage = params.pagina;
-  const pageNum = parseInt((Array.isArray(rawPage) ? rawPage[0] : rawPage) ?? "1", 10);
-  const { products, page, totalPages } = getCatalogPage(selected, Number.isNaN(pageNum) ? 1 : pageNum);
-
-  const pageHref = (n: number) => {
-    const q = new URLSearchParams();
-    if (selected) q.set("categoria", selected);
-    if (n > 1) q.set("pagina", String(n));
-    const qs = q.toString();
-    return qs ? `/?${qs}` : "/";
-  };
+  const products = (
+    selected
+      ? db.prepare("SELECT * FROM products WHERE category = ? ORDER BY id DESC").all(selected)
+      : db.prepare("SELECT * FROM products ORDER BY id DESC").all()
+  ) as Product[];
 
   return (
     <>
@@ -68,20 +63,6 @@ export default async function CatalogPage({
           </Link>
         ))}
       </div>
-      {totalPages > 1 && (
-        <nav className="filters" aria-label="Paginación">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-            <Link
-              key={n}
-              href={pageHref(n)}
-              className={`chip${n === page ? " chip-active" : ""}`}
-              aria-current={n === page ? "page" : undefined}
-            >
-              {n}
-            </Link>
-          ))}
-        </nav>
-      )}
     </>
   );
 }
