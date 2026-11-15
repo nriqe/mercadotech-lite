@@ -184,3 +184,68 @@ Las tres se corrigieron al cerrar, con mi aprobación. Son correcciones de hecho
 5. Decidir si `CLAUDE.md` importa `AGENTS.md` (`@AGENTS.md`) y qué hacer con `.claude/launch.json`.
 6. Avisar al docente de los greps de Supabase en `ENCARGO_LITE.md` §3 (sigue pendiente de la sesión 1).
 7. Los defectos siguen abiertos: 1 y 2 en parte (lo que hizo S2 en el catálogo), 3, 4, 5 y 6 enteros. Material de las sesiones 5, 6 y 7.
+
+---
+
+## Sesión 3 — Costos medidos: modelo, effort y caché (2026-11-14)
+
+Los números salen de `docs/COSTOS.md` y `docs/MEDICIONES.md`, medidos con el `tokens.py` corregido (tarifas del 2026-11-09).
+
+### La hipótesis y si se cumplió
+
+Escrita antes de medir, en `docs/COSTOS.md`:
+
+1. **La caché explica mi número; cambiar de modelo o de effort mueve la factura mucho menos que romper la caché.** Primera mitad: se cumplió. La entrada que vino de caché fue 98.0 % en A, 97.1 % en B y 95.5 % en C. Segunda mitad: no se probó, porque ninguna corrida rompió la caché. Lo que sí se midió la contradice en parte: la factura pasó de US$ 0.87 (A) a US$ 0.30 (B) y US$ 0.35 (C), aunque A incluye trabajo extra (ver más abajo).
+2. **Bajar el effort (B) ahorra menos que cambiar de modelo (C).** No se cumplió: B costó US$ 0.30 y C US$ 0.35. Son 5 centavos, sin trabajo igual en las tres corridas; no lo defendería como diferencia.
+3. **C cuesta cerca de la mitad que A.** No se cumplió a la letra: 0.35 ÷ 0.87 = 0.40. La tarifa de Sonnet es exactamente la mitad de la de Opus, y C además leyó menos caché (1,311,198 contra 2,206,421). Pero la cifra de A está inflada, así que 0.40 no es una proporción limpia.
+
+La pregunta de la spec "¿el effort paga igual con los dos modelos?" no se podía responder con tres corridas. Se reformuló antes de correr (nota en `COSTOS.md`).
+
+### Las tres configuraciones
+
+Mismo enunciado en las tres. Decisión del 2026-11-14: 3 corridas A/B/C, no las 5 de la spec v1.2.
+
+| | Config | Resultado | Entrada · caché esc · caché lec · salida | US$ | Duración |
+|---|---|---|---|---|---|
+| A | opus-5-5 · medium (la de S2) | a la primera; 5 pasos en el navegador; 0 turnos | 52 · 44,695 · 2,206,421 · 10,136 | 0.87 | 2 min |
+| B | opus-5-5 · low | funciona según su informe; solo `?pagina=2` y F5; sin commit; 0 turnos | 20 · 19,612 · 650,041 · 3,586 | 0.30 | 1 min |
+| C | sonnet-5-5 · medium | a la primera; solo `curl`, sin F5 ni barra de direcciones en navegador; 0 turnos | 30 · 61,238 · 1,311,198 · 6,935 | 0.35 | 2 min |
+
+**Las tres no hicieron el mismo trabajo.** A pidió todo en un solo mensaje: recorrió los 5 pasos en el navegador, enumeró 12 decisiones, hizo el commit y se midió. Su bloque incluye todo eso; el propio agente reportó US$ 0.78 antes de seguir la conversación, y la cifra de hoy es US$ 0.87. B no hizo commit ni los 5 pasos. C verificó con `curl`. La diferencia de costo mezcla la configuración con la cantidad de trabajo, y con estos datos no se separan.
+
+Decisiones no pedidas: A, 12 (4 con ⚠️); C, 9 (4 con ⚠️); B, sin medir.
+
+### Cuál elegí y por qué
+
+**A (opus-5-5 · medium).** Mis palabras: "a pesar del precio y del tiempo, lo hace a la primera."
+
+Lo que dicen los registros: C también quedó "a la primera" con 0 turnos. Lo que A tiene y C no es la verificación completa en el navegador (C usó `curl`). Con los datos de hoy, "a la primera" no separa a A de C; la verificación sí.
+
+### Qué dice mi regla
+
+Última línea de `docs/COSTOS.md`: "Elijo A (opus-5-5 · medium): a pesar del precio y del tiempo, lo hace a la primera." La segunda mitad de la forma "para tareas así uso esto, y para estas otras, aquello" no está escrita.
+
+### Qué cambió a lo largo del curso y qué no
+
+Filas S1, S2 y S3 (=A) de `docs/MEDICIONES.md`.
+
+* **Cambió:** dónde vive el código. En S2 y S3 las consultas salen de `app/page.tsx` a `lib/catalog.ts` y el 6 es `PRODUCTS_PER_PAGE`; lo pide el `CLAUDE.md`. Decisiones no pedidas: 7 → 11 → 12. Costo: solo S1 y S3 son comparables, US$ 0.43 → US$ 0.87; subió, y S3 incluye trabajo extra, así que no muestra una mejora ni una pérdida limpia.
+* **Empató:** el estado del filtro, en la URL (`?pagina=N`, leído en `app/page.tsx`), en las tres filas. Significa que el `CLAUDE.md` no cambió esa decisión: sin reglas el agente ya lo ponía en la URL. Resultado "a la primera" y 0 turnos empataron entre S1 y S3.
+* **No comparable:** el costo de S2 (US$ 1.89, `tokens.py` viejo, no se pudo volver a medir), y duración y turnos de S2 (7 min y 1 turno por un primer mensaje equivocado, no por el código).
+
+### Qué salió mal
+
+* A y B no se corrieron con el mismo alcance (ver arriba), y la cifra de A incluye la medición.
+* La spec v1.2 se contradecía (3 vs 5 corridas, D/E sin definir).
+* La Fase 3.3 no estaba hecha al cerrar la sesión: `COSTOS.md` no tenía la regla ni los precios, y la fila S3 estaba vacía. Se completó después.
+* Las filas A y B de `COSTOS.md` decían "sin medir en este chat". Se recuperaron de `tokens.py --patron` identificando las conversaciones por configuración y hora.
+* La corrida C hizo `git stash -u` del árbol sucio previo, con mi OK.
+
+### Pendiente para la sesión 4
+
+1. Escribir la segunda mitad de la regla ("y para estas otras, aquello").
+2. El repositorio quedó con el código de la corrida C commiteado (`cd052aa`), y elegí A (`19689e5`, revertido en `32e374b`). Decidir si se revierte C y se vuelve a aplicar A.
+3. Si quiero un costo de A limpio, repetirla con la tarea sola y la enumeración, el commit y la medición en mensajes aparte.
+4. Decidir si `CLAUDE.md` importa `AGENTS.md` y qué hacer con `.claude/launch.json` (de la sesión 2).
+5. Avisar al docente de los greps de Supabase en `ENCARGO_LITE.md` §3 (de la sesión 1).
+6. Los defectos del inventario siguen abiertos: material de las sesiones 5, 6 y 7.
