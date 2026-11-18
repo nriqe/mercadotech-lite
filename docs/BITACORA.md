@@ -287,7 +287,8 @@ Servidor `conversaciones`, solo lectura, alcance de proyecto (`.mcp.json`, habil
 Dos cosas que no cuadran y que dejo escritas:
 
 * Mis notas de la sesión (`sesion4.txt`) guardan el comando `claude mcp add --scope project conversaciones -- npx -y @modelcontextprotocol/server-filesystem --read-only …`, pero el `.mcp.json` actual ejecuta `node` sobre `~/.config/Claude/side-session-notes/local_40ef8b05-…/conversaciones-ro.mjs`. Ese script **no está en el repositorio**: en otra máquina, o si se borra esa carpeta, el servidor no arranca.
-* **Qué me respondió que antes no podía: no quedó registrado** en ningún archivo del proyecto ni en mis notas. No lo reconstruyo de memoria. Completar a mano aquí: `_______`.
+* **Qué me respondió:** no pude leer la carpeta de mis conversaciones, que era el objetivo. `list_allowed_directories` solo devolvió `curso-ed5/mercado-lite` y una carpeta de notas de sesión. `list_directory_with_sizes` sobre la carpeta de conversaciones dio `Access denied - path outside allowed directories`. Es decir: el servidor funcionó y respondió, pero lo que yo quería preguntarle seguía fuera de su alcance.
+* No registré si el `.mcp.json` actual (el script `conversaciones-ro.mjs`) resuelve ese acceso denegado: no lo probé después.
 
 ### Qué dice mi tabla de decisión (`docs/DECISIONES.md`)
 
@@ -305,14 +306,14 @@ Cierre de la tabla: lo que necesito en cada conversación va al contrato; lo que
 
 * La segunda petición no hizo nada: es el resultado esperado de la prueba, pero la fuente de 1.20rem sigue sin cambiar.
 * El «Estado hoy» de la Skill quedó desactualizado: sigue diciendo que el stock bajo `5` está suelto en `app/page.tsx:66` y `app/producto/[id]/page.tsx:24`, y ya no lo está. El grep de la Skill hoy aún devuelve 4 valores sueltos fuera de `lib/constants/` (contraseña mínima, imagen por defecto, cookie, moneda y locale).
-* La respuesta del MCP no se registró (ver arriba).
+* El MCP no dio acceso a la carpeta de conversaciones (`Access denied - path outside allowed directories`); solo veía el proyecto y una carpeta de notas.
 * `tokens.py` solo encuentra las conversaciones desde la raíz del curso, no desde `mercado-lite`, y dejó `docs/SALIDA_TOKENS.txt`.
 * `.claude/` estaba sin seguimiento al arrancar (contenía `answer-style`, anterior a la sesión).
 * El repo llevaba 2 commits sin subir (`origin/main: adelante 2`) al cerrar.
 
 ### Pendiente para la sesión 5
 
-1. Registrar qué responde el MCP `conversaciones` que antes no podía (completar el hueco de arriba).
+1. Conseguir que `conversaciones` lea la carpeta de conversaciones (hoy da `Access denied`) y comprobarlo con una pregunta que antes no pudiera responder.
 2. Decidir dónde vive `conversaciones-ro.mjs` (hoy fuera del repo) o volver al comando `npx` de mis notas.
 3. Actualizar el «Estado hoy» de la Skill (el stock bajo ya está en `lib/constants/catalog.ts`).
 4. Subagente de la tabla de decisión: «trabajo largo que no debe ensuciar mi contexto».
