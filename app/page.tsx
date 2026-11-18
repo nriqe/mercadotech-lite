@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { formatPEN } from "@/lib/db";
 import { getCatalogPage } from "@/lib/catalog";
+import { LOW_STOCK_THRESHOLD } from "@/lib/constants/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +61,7 @@ export default async function CatalogPage({
               <span className="price">{formatPEN(p.price)}</span>
               {p.stock === 0 ? (
                 <span className="stock-low">Agotado</span>
-              ) : p.stock <= 5 ? (
+              ) : p.stock <= LOW_STOCK_THRESHOLD ? (
                 <span className="stock-low">¡Quedan {p.stock}!</span>
               ) : null}
             </div>

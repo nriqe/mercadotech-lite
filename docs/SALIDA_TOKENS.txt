@@ -1,0 +1,6 @@
+==============================================================================
+2026-11-16 20:12  ·  tokens.py
+==============================================================================
+No encontré las conversaciones de este proyecto.
+Mira qué carpetas hay en: /home/enriquearias/.claude/projects
+

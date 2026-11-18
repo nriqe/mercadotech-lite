@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "conversaciones": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "/home/enriquearias/.config/Claude/side-session-notes/local_40ef8b05-18ee-4850-bebc-32daf3ab0b92/conversaciones-ro.mjs",
+        "/home/enriquearias/.claude/projects/-home-enriquearias-datapath-claude-code-for-developers"
+      ],
+      "env": {}
+    }
+  }
+}

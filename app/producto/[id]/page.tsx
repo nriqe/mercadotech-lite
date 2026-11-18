@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDb, formatPEN, type Product } from "@/lib/db";
 import { addToCartAction } from "@/app/actions";
+import { LOW_STOCK_THRESHOLD } from "@/lib/constants/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           <h1>{p.title}</h1>
           <p className="muted">{p.description}</p>
           <div className="price">{formatPEN(p.price)}</div>
-          <p className={p.stock <= 5 ? "stock-low" : "muted"}>
+          <p className={p.stock <= LOW_STOCK_THRESHOLD ? "stock-low" : "muted"}>
             {p.stock > 0 ? `${p.stock} unidades disponibles` : "Agotado"}
           </p>
           <form action={addToCartAction} className="row" style={{ alignItems: "end" }}>

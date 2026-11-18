@@ -12,13 +12,6 @@ Tienda de práctica del curso. Sus defectos medidos están en docs/00-ANTES.md; 
   Hoy no se cumple en 4 archivos: app/layout.tsx, app/producto/[id]/page.tsx, app/carrito/page.tsx, app/pedido/[id]/page.tsx.
   Verificación: `grep -rlE "getDb\(\)|\.prepare\(" app components --include="*.tsx"` debe devolver vacío.
 
-## Valores ajustables
-- Viven en `lib/constants/`. Hoy solo está ahí el tamaño de página (lib/constants/catalog.ts); siguen sueltos:
-  stock bajo `5` (app/page.tsx:66 y app/producto/[id]/page.tsx:24), contraseña mínima `6` (app/actions.ts:22),
-  imagen por defecto (app/actions.ts:159), duración de la cookie (lib/auth.ts:28), moneda y locale (lib/db.ts:106).
-  Verificación: `grep -rnE "maxAge|60 \* 60|length < 6|<= 5|\"PEN\"|es-PE|placehold\.co/600x450/[^?]*\?text=[$]\{" app components lib`
-  solo debe devolver líneas dentro de lib/constants/.
-
 ## Seguridad
 Esto se exige, aunque hoy no se cumpla.
 - /admin y createProductAction exigen un administrador, no solo una sesión. Hoy solo comprueban `if (!user)`

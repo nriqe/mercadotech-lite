@@ -250,3 +250,70 @@ Filas S1, S2 y S3 (=A) de `docs/MEDICIONES.md`.
 3. Decidir si `CLAUDE.md` importa `AGENTS.md` y qué hacer con `.claude/launch.json` (de la sesión 2).
 4. Avisar al docente de los greps de Supabase en `ENCARGO_LITE.md` §3 (de la sesión 1).
 5. Los defectos del inventario siguen abiertos: material de las sesiones 5, 6 y 7.
+
+---
+
+## Sesión 4 — Skills y MCP para tu forma de trabajar (2026-11-16; cierre 2026-11-17)
+
+Partida: commit `69841d0`, `claude` 2.1.319, node v22.21.1 (`docs/VERIFICACION_S4.md`).
+
+### La regla que saqué del contrato y por qué
+
+Saqué **«Valores ajustables»**: los umbrales, límites, duraciones, moneda e imagen por defecto viven en `lib/constants/`. La quité de `CLAUDE.md` y la puse en la Skill `valores-ajustables`.
+
+Por qué: en la propuesta de `VERIFICACION_S4.md` la marqué como regla de «a veces» (solo hace falta cuando la tarea añade o cambia números, textos o configuración fijos), y `CLAUDE.md` es para lo que vale en cada conversación. Las otras seis reglas se quedaron en el contrato; esa propuesta es la tabla de la verificación, no una medición.
+
+Resultado comprobado: `CLAUDE.md` pasó de 31 a 24 líneas. La regla **no** quedó en los dos sitios: está solo en la Skill.
+
+### Cómo quedó la descripción de la Skill
+
+`.claude/skills/valores-ajustables/SKILL.md`, campo `description`:
+
+> Mantiene los valores ajustables de MercadoTech Lite (umbrales, límites, duraciones, moneda, imagen por defecto) en lib/constants/ y verifica con grep que no queden sueltos. Úsala ante peticiones como "sube el umbral de stock bajo a 10", "pon la contraseña mínima en 8" o "cambia la duración de la cookie". No cubre lógica de negocio, acceso a datos, estilos ni seguridad (roles, sesiones, redirecciones).
+
+Dice qué hace, da tres ejemplos de petición y dice qué no cubre. El cuerpo trae la regla, el «Estado hoy», cinco pasos y un grep de verificación.
+
+### Las dos peticiones con las que la probé
+
+1. **«sube el umbral de stock bajo a 12»** → la Skill se ejecutó (apareció `valores-ajustables`, origen `projectSettings`). Resultado en el código, sin commitear hasta hoy: `LOW_STOCK_THRESHOLD = 12` en `lib/constants/catalog.ts`, y `app/page.tsx` y `app/producto/[id]/page.tsx` lo importan en vez del `5`. El `5` suelto ya no sale en el grep de la Skill.
+2. **«cambia el tamaño de la fuente de la paginación a 1.20rem»** → **la Skill no se ejecutó**, que es lo esperado: es un cambio de estilos y la descripción lo excluye. Tampoco hay cambio en `app/globals.css` (sin modificaciones en el árbol), así que esa petición no quedó aplicada.
+
+No registré cuántas veces probé ni el consumo de contexto de la Skill con una medición propia.
+
+### El servidor MCP que conecté
+
+Servidor `conversaciones`, solo lectura, alcance de proyecto (`.mcp.json`, habilitado en `.claude/settings.local.json`). Apunta a la carpeta de mis conversaciones de Claude Code: `/home/enriquearias/.claude/projects/-home-enriquearias-datapath-claude-code-for-developers`.
+
+Dos cosas que no cuadran y que dejo escritas:
+
+* Mis notas de la sesión (`sesion4.txt`) guardan el comando `claude mcp add --scope project conversaciones -- npx -y @modelcontextprotocol/server-filesystem --read-only …`, pero el `.mcp.json` actual ejecuta `node` sobre `~/.config/Claude/side-session-notes/local_40ef8b05-…/conversaciones-ro.mjs`. Ese script **no está en el repositorio**: en otra máquina, o si se borra esa carpeta, el servidor no arranca.
+* **Qué me respondió que antes no podía: no quedó registrado** en ningún archivo del proyecto ni en mis notas. No lo reconstruyo de memoria. Completar a mano aquí: `_______`.
+
+### Qué dice mi tabla de decisión (`docs/DECISIONES.md`)
+
+| si necesitas | usas | mi caso |
+|---|---|---|
+| Una regla que vale siempre | CLAUDE.md | los `.tsx` no consultan la base |
+| Un procedimiento que vale a veces | Skill | `valores-ajustables` |
+| Datos o acciones de un sistema externo | MCP | `conversaciones` (solo lectura) |
+| Trabajo largo que no debe ensuciar mi contexto | Subagente | sesión 5 |
+| Algo que se cumpla aunque el modelo no obedezca | Hook | sesión 6 |
+
+Cierre de la tabla: lo que necesito en cada conversación va al contrato; lo que necesito de vez en cuando, a una Skill; lo que vive fuera de mi proyecto, a un MCP.
+
+### Qué salió mal / qué no funcionó
+
+* La segunda petición no hizo nada: es el resultado esperado de la prueba, pero la fuente de 1.20rem sigue sin cambiar.
+* El «Estado hoy» de la Skill quedó desactualizado: sigue diciendo que el stock bajo `5` está suelto en `app/page.tsx:66` y `app/producto/[id]/page.tsx:24`, y ya no lo está. El grep de la Skill hoy aún devuelve 4 valores sueltos fuera de `lib/constants/` (contraseña mínima, imagen por defecto, cookie, moneda y locale).
+* La respuesta del MCP no se registró (ver arriba).
+* `tokens.py` solo encuentra las conversaciones desde la raíz del curso, no desde `mercado-lite`, y dejó `docs/SALIDA_TOKENS.txt`.
+* `.claude/` estaba sin seguimiento al arrancar (contenía `answer-style`, anterior a la sesión).
+* El repo llevaba 2 commits sin subir (`origin/main: adelante 2`) al cerrar.
+
+### Pendiente para la sesión 5
+
+1. Registrar qué responde el MCP `conversaciones` que antes no podía (completar el hueco de arriba).
+2. Decidir dónde vive `conversaciones-ro.mjs` (hoy fuera del repo) o volver al comando `npx` de mis notas.
+3. Actualizar el «Estado hoy» de la Skill (el stock bajo ya está en `lib/constants/catalog.ts`).
+4. Subagente de la tabla de decisión: «trabajo largo que no debe ensuciar mi contexto».
+5. Los defectos del inventario siguen abiertos y sin tocar: `.tsx` que consultan la base (4 archivos), valores sueltos que quedan, cero pruebas, `/admin` sin rol, redirección abierta del login, sesión sin vencimiento en el servidor. Material de las sesiones 5, 6 y 7.
