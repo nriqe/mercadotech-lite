@@ -102,6 +102,5 @@ export function getDb(): Database.Database {
   return global.__db;
 }
 
-export function formatPEN(amount: number) {
-  return new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(amount);
-}
+// formatPEN vive ahora en lib/format.ts; se re-exporta para no tocar las demás páginas.
+export { formatPEN } from "./format";

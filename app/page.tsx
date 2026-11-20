@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatPEN } from "@/lib/db";
+import { formatPEN } from "@/lib/format";
 import { getCatalogPage } from "@/lib/catalog";
 import { LOW_STOCK_THRESHOLD } from "@/lib/constants/catalog";
 

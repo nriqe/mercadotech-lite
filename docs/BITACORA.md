@@ -318,3 +318,73 @@ Cierre de la tabla: lo que necesito en cada conversación va al contrato; lo que
 3. Actualizar el «Estado hoy» de la Skill (el stock bajo ya está en `lib/constants/catalog.ts`).
 4. Subagente de la tabla de decisión: «trabajo largo que no debe ensuciar mi contexto».
 5. Los defectos del inventario siguen abiertos y sin tocar: `.tsx` que consultan la base (4 archivos), valores sueltos que quedan, cero pruebas, `/admin` sin rol, redirección abierta del login, sesión sin vencimiento en el servidor. Material de las sesiones 5, 6 y 7.
+
+---
+
+## Sesión 5 — El Tech Lead: un revisor que no escribió el código (2026-11-19)
+
+Partida: commit `072e8cb`, `claude` 2.1.327 (`docs/VERIFICACION_S5.md`). Todas las cifras salen de `docs/REVISION.md`.
+
+### El autor contra el revisor
+
+Tarea patrón: la paginación, commit `b1a9221`. El revisor fue un subagente general-purpose nuevo que vio solo el diff, sin `docs/`.
+
+* Decisiones no pedidas que declaró el autor (S2): **11**, 3 con ⚠️.
+* Las que encontró el revisor: **11**, 5 con ⚠️.
+* Coincidieron: **9 de 11**. Solo el autor: 2 (`launch.json` y verificar sobre el `:3000`, las dos fuera del diff). Solo el revisor: 1 (la falta de pruebas).
+* Con ⚠️ coincidieron **0**. El autor marcó 3 y el revisor 5, y no hubo ningún tema marcado por los dos.
+* El cruce es por tema y los dos agrupan distinto; el conteo depende de ese criterio.
+
+### La description del Tech Lead
+
+`.claude/agents/tech-lead.md`, campo `description`:
+
+> Auditor de solo lectura que contesta una rúbrica de seis preguntas leyendo el código y devuelve un informe con severidades, archivo y línea. Úsalo ante peticiones como "audita el módulo del carrito", "pásale el Tech Lead a lo que escribí hoy" o "¿qué le falta a este código para estar bien?". No corrige: no tiene herramientas para editar, y si le pides arreglar algo, lo dice y se detiene.
+
+Tiene tres peticiones reales entre comillas y dice qué no hace. `tools: Read, Grep, Glob`, sin Edit ni Write.
+
+### `skills` y `model`
+
+* **`skills`: no puse ninguno** (el archivo no tiene la línea). En `VERIFICACION_S5.md` anoté que `valores-ajustables` es un procedimiento para quien edita valores, no para quien audita, y que sería más útil una Skill que corra los greps de `CLAUDE.md`. La guía de la sesión solo carga una Skill si sirve para revisar. No quedó registrado en otro sitio por qué no pasé a una Skill nueva.
+* **`model: inherit`.** La guía dice usar lo que diga mi regla de `docs/COSTOS.md` para revisión, y si no habla de revisar, `inherit`. Mi regla habla de tareas con criterios comprobables y de cambios chicos, no de revisar. Esta razón la reconstruyo del archivo y de la guía; no hay una nota mía de ese momento.
+
+### Qué respondió cuando le pedí corregir
+
+**No quedó registrado.** `docs/REVISION.md` no copia su respuesta a "Corrige el primer hallazgo de tu informe". Lo único que consta es lo que el archivo le ordena: responder que no puede y que corrige quien lo invocó. Si lo hizo así, no lo puedo afirmar desde estos registros.
+
+### Qué se corrigió y la nota
+
+* Auditoría 1 (`app/page.tsx`): 0 críticos, 1 importante (sin pruebas), 1 sugerencia (`formatPEN` importado desde `lib/db`). Nota **8,75**.
+* Corregido: **1 de 3 posibles**. `formatPEN` pasó a `lib/format.ts`; `lib/db.ts` lo re-exporta para no tocar las otras páginas. `npm run build` pasó.
+* Auditoría 2, hecha por el Tech Lead y no por quien corrigió: 0 críticos, 1 importante, 0 sugerencias. Nota **9**.
+* La mejora de 0,25 viene solo de la sugerencia. Las pruebas (R3) siguen restando 1, a propósito: son de la S6.
+* La segunda mitad de la sugerencia (4 archivos que consultan la base) **no se corrigió**. Dejó de aparecer porque el Tech Lead acotó el alcance a `app/page.tsx`, no porque se arreglara: el grep de `CLAUDE.md` sigue dando `layout`, `producto`, `pedido` y `carrito`.
+
+### Defectos del inventario que encontró sin que le dijeran dónde
+
+El encargo solo nombraba el módulo.
+
+| Defecto | Resultado |
+|---|---|
+| 3 · Cero pruebas | Encontrado en las dos auditorías |
+| 1 · Componentes que consultan la base | Parcial en la auditoría 1 (`formatPEN` en `lib/db` y mención de layout, carrito, pedido y producto); en la 2 no, por el alcance |
+| 2 · Valores ajustables | No; en este módulo ya estaban en `lib/constants/` |
+| 4 · `/admin` sin rol, 5 · redirección abierta, 6 · sesión sin vencimiento | No. R4–R6 se declararon "no aplican" porque están en `app/actions.ts`, `app/admin/page.tsx` y `lib/auth.ts`, fuera de `app/page.tsx` |
+
+Lección: no falló la rúbrica, falló el alcance. Para ver 4, 5 y 6 hay que auditar esos módulos, o añadir una pregunta que mande seguir las dependencias de seguridad.
+
+### Qué no funcionó / qué salió mal
+
+* Con ⚠️ autor y revisor coincidieron en 0.
+* El Tech Lead con alcance de una sola página no vio 3 de los 6 defectos del inventario.
+* Solo se corrigió 1 de 3 hallazgos posibles; los otros 2 quedan abiertos.
+* La respuesta del Tech Lead al pedirle corregir no se guardó.
+* Al arrancar había `.mcp.json` y `mcp/conversaciones-ro.mjs` sin commit y 6 archivos de `doc_sesions/sesion5/` sin versionar (los de `doc_sesions` se suben en el cierre).
+
+### Pendiente para la sesión 6
+
+1. Pruebas (defecto 3, R3): sigue siendo el hallazgo Importante y resta 1 a la nota.
+2. Hooks, la última fila de `docs/DECISIONES.md`.
+3. Los 4 `.tsx` que consultan la base (`layout`, `producto`, `pedido`, `carrito`) siguen sin corregir.
+4. Auditar `app/actions.ts`, `app/admin/page.tsx` y `lib/auth.ts` con el Tech Lead para ver los defectos 4, 5 y 6.
+5. Decidir si la Skill que corre los greps de `CLAUDE.md` (propuesta de `VERIFICACION_S5.md`) se escribe.
