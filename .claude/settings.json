@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npm run build)",
-      "PowerShell(npm run build)"
+      "PowerShell(npm run build)",
+      "Bash(npm test)",
+      "PowerShell(npm test)"
     ],
     "ask": [
       "Bash(npm install *)",
@@ -25,6 +27,13 @@
         "matcher": "Bash|PowerShell|Read|Grep|Glob",
         "hooks": [
           { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/bloquear-peligroso.js\"" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/exigir-pruebas.js\"" }
         ]
       }
     ]

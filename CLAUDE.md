@@ -4,8 +4,9 @@
 Tienda de práctica del curso. Sus defectos medidos están en docs/00-ANTES.md; aquí solo entran como reglas.
 
 ## Comandos
-- `npm run dev`, `npm run build`, `npm run start`: son los únicos scripts de package.json.
-- Pruebas: todavía no hay, y no hay script de pruebas (`npm test` → `Missing script: "test"`). No digas que las pruebas pasaron.
+- `npm run dev`, `npm run build`, `npm run start`, `npm test`: son los scripts de package.json.
+- Pruebas: hay (Vitest, `lib/format.test.ts`). `npm test` tiene que pasar antes de dar algo por terminado, y el hook Stop (`.claude/hooks/exigir-pruebas.js`) lo exige.
+  Verificación: `npm test` termina en verde (exit 0).
 
 ## Reglas de arquitectura
 - Los archivos .tsx no consultan la base: nada de `getDb()` ni `.prepare(` en páginas ni layouts. Reciben los datos ya listos de un solo módulo de acceso a datos.
