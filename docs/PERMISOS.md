@@ -39,3 +39,13 @@ Un evento que el hook no puede leer también se bloquea: un hook roto no debe ab
 - Un `Grep` del Tech Lead sin ruta, sobre todo el proyecto, puede devolver líneas de `docs/`: el hook frena lo que nombra `docs/`, no lo que lo recorre de paso.
 - Un comando que borra o descarta por otro camino (un script, `node -e`, `find -delete`).
 - También frena un comando que solo menciona esas palabras, sin ejecutarlas (por eso los archivos de la sesión se escriben con la herramienta de edición, no con `cat >>` ni `echo >`).
+
+## Deshacer
+
+**Qué deshace `/rewind`:** lo que el agente editó con sus herramientas de archivo (Edit/Write). Restaura el código, la conversación o ambos, al checkpoint anterior a un mensaje tuyo.
+
+**Qué no deshace, y qué uso:** un archivo cambiado solo por un comando de consola, lo que hizo un subagente y lo que editaste tú a mano. Para eso uso git, en mi terminal: `git restore <archivo>` (o `git diff` primero para ver el daño). El hook de la 6.2 no deja que lo corra el agente. Tampoco se deshace con ninguno de los dos un `git push`: por eso va en `ask`.
+
+**Qué no frenan las reglas `deny`:** un programa que escribe un archivo por dentro, como `node -e "fs.writeFileSync(...)"`. El `deny` de `Edit` cubre la herramienta de edición, las redirecciones (`>`, `>>`, `tee`, `sed`) y lo que escribe `PowerShell`, pero no el subproceso que abre el archivo por su cuenta. Por eso `.claude/settings.json` y `.claude/hooks/**` quedan protegidos contra el uso normal del agente, no contra un programa decidido a saltarse la regla; lo último lo cubre la revisión de `git diff` antes de cada commit.
+
+**Sandbox en mi sistema:** esta máquina es Linux nativo (Fedora, no WSL) y tiene `bubblewrap` y `socat` instalados, así que el sandbox está disponible y se activa con `/sandbox`. Limita los comandos de `Bash` y `PowerShell` y los procesos que abren: escriben solo en la carpeta del proyecto y en un temporal, no leen archivos como `~/.ssh`, y salen a internet solo hacia dominios permitidos (al principio, ninguno). Cerraría justo el hueco de `node -e`. Hoy **no está activado**: es opcional y la red de esta sesión no depende de él. (En Windows nativo no existiría: los comandos corren sin aislar; en WSL1 hace falta WSL2.)
