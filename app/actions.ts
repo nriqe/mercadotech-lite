@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getDb, type Product } from "@/lib/db";
+import { isAdmin } from "@/lib/admin";
 import {
   createSession,
   destroySession,
@@ -142,6 +143,7 @@ export async function checkoutAction(_prev: FormState): Promise<FormState> {
 export async function createProductAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/admin");
+  if (!isAdmin(user)) return { error: "No tienes permiso para crear productos." };
 
   const p: Omit<Product, "id"> = {
     title: String(formData.get("title") ?? "").trim(),

@@ -15,9 +15,8 @@ Tienda de práctica del curso. Sus defectos medidos están en docs/00-ANTES.md; 
 
 ## Seguridad
 Esto se exige, aunque hoy no se cumpla.
-- /admin y createProductAction exigen un administrador, no solo una sesión. Hoy solo comprueban `if (!user)`
-  (app/admin/page.tsx:9 y app/actions.ts:144), y el registro es libre.
-  Verificación: `grep -rniE "role|is_admin|isAdmin" lib app components` no debe salir vacío, y debe haber una comprobación en los dos archivos.
+- /admin y createProductAction exigen un administrador, no solo una sesión: llaman a `isAdmin(user)` (lib/admin.ts), que compara el correo con `ADMIN_EMAILS`; sin la variable, nadie es administrador. Ya se cumple.
+  Verificación: `grep -rniE "role|is_admin|isAdmin" lib app components` no debe salir vacío, y debe haber una comprobación en los dos archivos (app/admin/page.tsx y app/actions.ts).
 - El `next` del login solo acepta rutas internas: empieza por `/` y no por `//`. Hoy app/actions.ts:46 acepta `//sitio-externo.com`.
   Verificación: `grep -n 'redirect(next.startsWith("/") ? next' app/actions.ts` debe devolver vacío.
 - La sesión también vence en el servidor: la fila de `sessions` deja de valer cuando vence la cookie (7 días, lib/auth.ts:28).
