@@ -388,3 +388,92 @@ Lección: no falló la rúbrica, falló el alcance. Para ver 4, 5 y 6 hay que au
 3. Los 4 `.tsx` que consultan la base (`layout`, `producto`, `pedido`, `carrito`) siguen sin corregir.
 4. Auditar `app/actions.ts`, `app/admin/page.tsx` y `lib/auth.ts` con el Tech Lead para ver los defectos 4, 5 y 6.
 5. Decidir si la Skill que corre los greps de `CLAUDE.md` (propuesta de `VERIFICACION_S5.md`) se escribe.
+
+---
+
+## Sesión 6 — Permisos, hooks y red de seguridad (2026-11-22)
+
+Partida: commit `8951e88`, `claude` 2.1.327, Linux con solo la consola `Bash` (`docs/VERIFICACION_S6.md`). Modo de la sesión: `auto`. Lo que cuento de cada prueba sale de los registros de las conversaciones de hoy y de comandos corridos al cerrar; donde el registro no dice algo, lo digo.
+
+### Reglas en `.claude/settings.json` y de dónde salió cada una
+
+La matriz completa, con su origen, está en `docs/PERMISOS.md`. Cada regla de comando está dos veces (`Bash` y `PowerShell`) porque el archivo se commitea y en Windows el agente elige consola.
+
+| Lista | Regla | De dónde salió |
+|---|---|---|
+| deny | `Edit(./docs/00-ANTES.md)`, `Edit(./docs/MEDICIONES.md)` | Los prompts del curso repiten sesión tras sesión que esos archivos no se tocan |
+| deny | `Edit(./.claude/settings.json)`, `Edit(./.claude/hooks/**)` | Fase 6.4 (commit `46382bd`): cerrar la red después de armarla |
+| ask | `npm install *` y `npm install` | El riesgo que acepté en la sesión 1: en `auto` el agente puede instalar sin preguntarme |
+| ask | `git push *` y `git push` | Lo que sale de mi máquina no se deshace con `/rewind` ni con git local |
+| allow | `npm run build` | `CLAUDE.md`, sección Comandos |
+| allow | `npm test` | Fase 6.3: la señal en verde tiene que poder correr sin preguntar |
+
+No puse ningún `deny` de comandos: un `deny` de `Bash` con patrón apaga la consola `PowerShell` sin avisar. Lo que debía frenar comandos lo hizo el hook.
+
+### Qué pasó al pedirle editar `docs/00-ANTES.md`
+
+Le pedí agregar una línea al final. No la agregó, y el archivo sigue igual. Dos intentos, dos bloqueos:
+
+* Con `echo "prueba de permisos" >> docs/00-ANTES.md` en `Bash`: `Permission to use Bash with command echo "prueba de permisos" >> docs/00-ANTES.md && tail -n 3 docs/00-ANTES.md has been denied.`
+* Con la herramienta de edición: `File is in a directory that is denied by your permission settings.` El mensaje dice "directorio" aunque la regla es de un solo archivo; no sé por qué.
+
+El agente no probó otros rodeos y me lo dijo.
+
+### Qué pasó al pedirle instalar un paquete
+
+* `npm install left-pad`: **se instaló** (`left-pad@1.3.0`, entró en `package.json` y en el lockfile). El registro no muestra ningún rechazo; **no muestra si me apareció el aviso de permiso**, así que no puedo afirmar que la regla `ask` preguntó en ese caso.
+* `npm install` sin argumentos: ahí sí hubo aviso y lo rechacé. El comando no corrió.
+* Pedí desinstalar `left-pad`: `npm uninstall left-pad` corrió sin bloqueo (ninguna regla lo cubre). Hoy `left-pad` no está en `package.json` ni en el lockfile.
+
+### Qué bloqueó el hook, con qué consola
+
+* **Hook `bloquear-peligroso.js`, consola `Bash`.** Le pedí `git status --short` y luego `git reset --hard HEAD`. El primero corrió (`?? doc_sesions/sesion6/`). El segundo lo bloqueó el hook, mensaje tal cual: `PreToolUse:Bash hook error: [node "$CLAUDE_PROJECT_DIR/.claude/hooks/bloquear-peligroso.js"]: Bloqueado por el hook del proyecto: git reset --hard borra cambios sin commitear. Si de verdad hace falta, lo corre la persona en su terminal.`
+* **`PowerShell` no se probó:** en esta máquina no existe. El matcher la nombra por el equipo de Windows.
+* **Tech Lead y `docs/`: el hook no frenó nada.** Le pedí al Tech Lead leer `docs/MEDICIONES.md`. Respondió: "No leí docs/MEDICIONES.md y no intenté leerlo. Mis órdenes me prohíben leer cualquier cosa dentro de `docs/`, ni siquiera como prueba del hook". Lo frenó **su propio archivo**, no el hook; el hook nunca llegó a ejecutarse. Sobre cuántas herramientas usó: el aviso del sistema registró 1 y su texto dice que no llamó a `Read`; no sé cuál de las dos cosas es exacta.
+* Control: le pedí leer `package.json` y contar scripts (fuera de `docs/`). Contestó 3 (`dev`, `build`, `start`), correcto para ese momento.
+* **Consecuencia:** la parte del hook sobre el Tech Lead solo está probada con los casos simulados de `node .claude/hooks/probar-hooks.js`, no contra el subagente real. Hoy esa corrida da **23 de 23** casos.
+
+### Qué función probé y qué pasó cuando rompí una prueba
+
+* Función: `formatPEN`, de `lib/format.ts` (pura: recibe un monto, devuelve texto). Archivo `lib/format.test.ts`, 3 pruebas: `1234.5` → `S/ 1,234.50`, `0` → `S/ 0.00`, y el espacio entre `S/` y el número es no separable.
+* `npm test` corrido hoy al cerrar: 1 archivo, 3 pruebas pasan, exit 0.
+* Cómo rompí una: pedí que los precios se mostraran con "PEN" en vez de "S/", sin tocar pruebas y sin correr `npm test`. El agente cambió `formatPEN` y la etiqueta de `components/ProductForm.tsx`, y quiso terminar. **El hook Stop (`exigir-pruebas.js`) lo devolvió:** `Las pruebas fallan (npm test). No des la tarea por terminada…`, con 3 pruebas en rojo (`expected 'PEN 10.00' to contain 'S/ '`). El agente no tocó el código ni las pruebas para taparlo: dijo que fallaban y por qué. Hoy `formatPEN` vuelve a devolver "S/"; **los registros que revisé no dicen con qué comando lo deshice.**
+
+### Qué deshizo `/rewind` y qué tuve que deshacer con git
+
+* Pedí cambiar el `<h1>` de `app/page.tsx` a "Prueba de rewind" con su herramienta de edición. `/rewind` lo deshizo (hoy el título es "Tecnología que te mueve").
+* Pedí agregar `// prueba de consola` a `lib/format.test.ts` con un solo comando de consola (`echo >>`). Corrió sin aviso. `/rewind` no lo vio, y lo deshice yo con `git restore` en mi terminal. Esto último lo sé por lo que escribí en el prompt de la 6.4; los registros solo guardan los dos pedidos, no el `/rewind` ni el `git restore`.
+* Lo que no deshace ninguno de los dos: un `git push`. Por eso va en `ask`.
+
+### Qué pasó al pedirle tocar la configuración
+
+Le pedí quitar `"Edit(./docs/00-ANTES.md)"` de `.claude/settings.json`: primero con la herramienta de edición y, si no podía, una vez desde la consola.
+
+* Edición: `File is in a directory that is denied by your permission settings.`
+* Consola (`sed -i`): `Permission to use Bash with command sed -i '/"Edit(.\/docs\/00-ANTES.md)",/d' .claude/settings.json has been denied.`
+* Los dos bloqueos son reglas `deny`, no el hook. No probó otras vías y `settings.json` quedó igual. Me dijo que la línea la borre yo.
+* Su respuesta mostró vacío el bloque del primer mensaje; el texto sale del registro.
+* Hueco que sigue abierto y que `docs/PERMISOS.md` ya dice: un programa que escribe el archivo por dentro (`node -e`) no lo frena `deny`. El sandbox lo cerraría y **no está activado**.
+
+### Qué salió mal / qué no funcionó
+
+* `npm install left-pad` se instaló y no consta que haya preguntado.
+* El hook del Tech Lead no se probó contra el subagente real (se negó por su archivo).
+* `docs/PERMISOS.md` y `docs/DECISIONES.md` dicen "22 de 22"; hoy son 23. El caso 23 es el del hook Stop, agregado en la 6.3 después de escribir esos textos. No lo corregí aquí.
+* Faltan dos datos que los registros no tienen: cómo deshice el cambio de "PEN" y el comando exacto del `git restore`.
+* Cobertura: 3 pruebas de una sola función. Cerraron "cero pruebas" como señal, no como cobertura. No volví a pasar el Tech Lead.
+
+### Verificación de `CLAUDE.md` al cerrar
+
+Corrí cada comando. Ninguna línea de "hoy" quedó falsa: sigue habiendo 4 `.tsx` con `getDb()`/`.prepare(`; `role|is_admin|isAdmin` sigue sin resultados; `app/actions.ts:46` sigue aceptando `//`; en `lib/auth.ts` solo está el `DELETE` de la línea 35. Los números de línea que cita coinciden. No se cambió ninguna línea.
+
+### Pendiente para la sesión 7
+
+1. **Defecto 4 entero** (`/admin` y `createProductAction` solo comprueban sesión; el registro es libre). El inventario lo daba en "S6 y S7"; esta sesión no tocó nada de él, así que pasa completo a la 7.
+2. Defecto 5 (redirección abierta, `app/actions.ts:46`) y defecto 6 (sesión sin vencimiento en el servidor, `lib/auth.ts:35`).
+3. Defecto 1: los 4 `.tsx` que consultan la base (`layout`, `producto`, `carrito`, `pedido`).
+4. Defecto 2: los valores sueltos que dejó la sesión 4 (sin volver a medir hoy).
+5. Probar el hook del Tech Lead contra el subagente real, o aceptar que solo está probado con casos simulados.
+6. Decidir si se activa el sandbox (`/sandbox`) para el hueco de `node -e`.
+7. Corregir el "22 de 22" de `docs/PERMISOS.md` y `docs/DECISIONES.md`.
+8. Averiguar por qué `npm install left-pad` no mostró aviso, si no me lo mostró.
