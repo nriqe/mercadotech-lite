@@ -1,0 +1,12 @@
+{
+  "name": "tienda-ensayo",
+  "description": "Los plugins de mi tienda.",
+  "owner": { "name": "Enrique Arias" },
+  "plugins": [
+    {
+      "name": "red-de-seguridad",
+      "source": "./plugin",
+      "description": "Mi red de seguridad: un revisor que no edita y dos hooks."
+    }
+  ]
+}

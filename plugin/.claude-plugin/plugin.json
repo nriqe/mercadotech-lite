@@ -1,0 +1,6 @@
+{
+  "name": "red-de-seguridad",
+  "version": "1.0.0",
+  "description": "Mi red de seguridad: un revisor de solo lectura (Tech Lead) y dos hooks que frenan comandos destructivos y cierres con pruebas rotas.",
+  "author": { "name": "Enrique Arias" }
+}
