@@ -569,3 +569,77 @@ Los cuatro de patrones, excluyendo `node_modules`, `.next`, `.git`, `doc_sesions
 8. Decidir si se activa el sandbox; sigue siendo el único cierre real del hueco de `node -e`.
 9. Pendientes de la sesión 6 que no se tocaron: conteo de casos desactualizado en `docs/PERMISOS.md` y `docs/DECISIONES.md`, hook del Tech Lead contra el subagente real, aviso de `npm install left-pad`.
 10. Decidir si `doc_sesions/sesion7/` se sube y cómo se trata su coincidencia en los greps.
+
+---
+
+## Sesión 8 — Plugin, ensayo del showcase y cierre del curso (2026-11-24; cierre 2026-11-27)
+
+Fuentes: `docs/VERIFICACION_S8.md`, `docs/PLUGIN.md`, `docs/SHOWCASE.md`, `plugin/README.md`. Lo que esos archivos no dicen aparece como "no consta".
+
+### Qué se quería
+
+Empaquetar la red de seguridad (revisor, hooks, skills) como un plugin, comprobar que funciona fuera de esta app, y ensayar una presentación de cinco minutos con cifras que salgan de mis archivos.
+
+### Qué entró en el plugin `red-de-seguridad` 1.0.0 (marketplace `tienda-ensayo`) y qué no
+
+| Pieza | ¿Entró? | Nota |
+|---|---|---|
+| Tech Lead | Sí | Fuera del plugin se llama `red-de-seguridad:tech-lead` |
+| Hook `bloquear-peligroso.js` | Sí, adaptado | Reconoce el agente con o sin prefijo de plugin |
+| Hook `exigir-pruebas.js` | Sí, adaptado | Si el proyecto no tiene script `test`, no exige nada |
+| Skill `answer-style` | Sí | |
+| Skill `valores-ajustables` | Sí, por decisión mía | Es de MercadoTech Lite; el README lo avisa |
+| `probar-hooks.js` | Sí, el del plugin (27 casos) | El de `.claude/hooks/` (23 casos) se quedó en el proyecto |
+| Permisos de `.claude/settings.json` | No | Un plugin no distribuye `permissions`; son rutas mías |
+| Servidor MCP `conversaciones` | No | Lee una carpeta de mi máquina |
+| Output style | No hay | No existía; no se inventó |
+| Workflows de GitHub | No | No son de Claude Code |
+
+Las piezas se copiaron: `.claude/` quedó como estaba. Con los hooks copiados tal cual, el probador dio 25 de 27; fallaron el nombre del agente con prefijo y el cierre sin script `test`. Con las dos adaptaciones, 27 de 27. `claude plugin validate ./plugin` y `claude plugin validate .` terminaron con `Validation passed` (exit 0).
+
+### Qué pasó al instalarlo en limpio (carpeta `prueba_plugin`, otro repositorio)
+
+* `claude plugin list` mostró `red-de-seguridad@tienda-ensayo`, 1.0.0, `Scope: local`, `enabled`.
+* El hook `bloquear-peligroso.js` bloqueó el reset destructivo y dejó pasar `git status --short`.
+* El Tech Lead aparece como `red-de-seguridad:tech-lead` y devolvió un informe con su formato. Sus hallazgos no se verificaron por separado.
+* La skill `valores-ajustables` cargó, pero no sirvió: habla de archivos de esta app que no existen allí.
+* **No consta:** `exigir-pruebas.js`, `answer-style`, y que el Tech Lead no pueda leer `docs/` con el nombre con prefijo. No se probaron.
+* El mensaje del hook dice "hook del proyecto" aunque venga del plugin. Se anotó, no se cambió.
+* Desinstalación: `settings.local.json` de la carpeta de prueba quedó con `enabledPlugins` y `extraKnownMarketplaces` vacíos. La copia en `~/.claude/plugins/cache/` no se comprobó.
+
+Resultado: de cinco piezas, dos comprobadas, una instalada que no sirve fuera, dos sin probar.
+
+### Cuánto duró el ensayo del showcase
+
+5:08 (`docs/SHOWCASE.md`), contra un guion de cinco minutos: **8 segundos de más**. El archivo no dice qué se recortó ni si el ensayo se repitió. Su plan B dice que, si se pasa, se recorta contenido y no se habla más rápido.
+
+### Qué no funcionó o quedó a medias
+
+* `valores-ajustables` está en el plugin aunque no sirve fuera; `PLUGIN.md` propone sacarla o volverla genérica. No se hizo.
+* Los cuatro cambios propuestos en `PLUGIN.md` §4 no se aplicaron.
+* `docs/INYECCION.md` sigue truncado (a mitad de la sección 2).
+* No se activó el sandbox: el hueco de `node -e` sigue cerrado solo por el clasificador.
+* `.env.example` no existe; `.claude/settings.local.json` no está en el `.gitignore` del proyecto.
+* No se probó que `/admin` rechace a un usuario sin permiso con la app corriendo.
+* Quedan abiertos los defectos 5 y 6 del inventario, y los de 1 y 2 en parte.
+
+### Tabla final del curso: los cuatro defectos del inventario de la sesión 1
+
+Estado comprobado el 2026-11-27 con los comandos de `CLAUDE.md` y `npm test`.
+
+| # · Defecto | Estado hoy | Se cerró en | Se comprueba con |
+|---|---|---|---|
+| 1 · `.tsx` que consultan la base | **Abierto en parte.** Eran 5 archivos; hoy son 4 (`app/layout.tsx`, `app/carrito/page.tsx`, `app/pedido/[id]/page.tsx`, `app/producto/[id]/page.tsx`). `app/page.tsx` salió en la sesión 2 | Sesión 2 (1 de 5). El resto, sin cerrar | `grep -rlE "getDb\(\)\|\.prepare\(" app components --include="*.tsx"` debe devolver vacío; hoy devuelve 4 |
+| 2 · Valores ajustables incrustados | **Abierto en parte.** Existe `lib/constants/catalog.ts` (`PRODUCTS_PER_PAGE`, `LOW_STOCK_THRESHOLD`). La bitácora de la sesión 4 registra valores que seguían sueltos y no se volvió a medir | Sin cerrar; avance en las sesiones 2 y 4 | La skill `valores-ajustables` y `lib/constants/catalog.ts`. Sin medición actual |
+| 3 · Cero pruebas | **Cerrado** | Sesión 6 (commit `bdbb6d2`) | `npm test`: 2 archivos, 8 pruebas, exit 0 (`lib/format.test.ts`, `lib/admin.test.ts`) |
+| 4 · Seguridad abierta (`/admin`) | **Cerrado** | Sesión 7 (commit `8e43385`) | `grep -rniE "role\|is_admin\|isAdmin" lib app components`: `isAdmin` en `app/admin/page.tsx:11` y `app/actions.ts:146`; `lib/admin.test.ts` |
+
+Los dos defectos extra del inventario siguen abiertos: 5 (`app/actions.ts:47` acepta `//sitio-externo.com`) y 6 (`lib/auth.ts:35`, la sesión solo se borra al salir).
+
+### Qué sigue
+
+1. Defectos 5 y 6.
+2. Defecto 1: sacar la consulta a la base de los 4 `.tsx` restantes.
+3. Defecto 2: medir de nuevo y cerrar los valores sueltos.
+4. Plugin: sacar o generalizar `valores-ajustables`, cambiar el mensaje del hook, probar `exigir-pruebas.js` y `answer-style` fuera.
+5. Completar `docs/INYECCION.md`; decidir sobre el sandbox, `.env.example` y las rutas con mi usuario en `docs/`.
